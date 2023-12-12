@@ -1,0 +1,24 @@
+{
+    "type": "function",
+    "function": {
+        "name": "control_device_with_name",
+        "description": "Control a device given its name and command.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "device_name": {
+                    "type": "string",
+                    "description": "The name of the device to control. e.g. 'リビングのライト', 'サーキュレーターのプラグ', '寝室のライト', 'リビングのカーテン'"
+                },
+                "command": {
+                    "type": "string",
+                    "description": "The command to send to the device. e.g. 'turnOn', 'turnOff'"
+                }
+            },
+            "required": [
+                "device_name",
+                "command"
+            ]
+        }
+    }
+}
