@@ -1,6 +1,7 @@
 import json
 import os
-
+import platform
+from enum import Enum
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -14,7 +15,28 @@ ORGANIZATION_ID = os.getenv("ORGANIZATION_ID")
 API_KEY = os.getenv("API_KEY")
 
 
+class OS_TYPE(Enum):
+    WINDOWS = "Windows"
+    MAC = "MAC"
+    LINUX = "Linux"
+
+
+def check_platform() -> OS_TYPE:
+    pf = platform.system()
+    if pf == "Windows":
+        return OS_TYPE.WINDOWS
+    elif pf == "Darwin":
+        import pyaudio
+
+        return OS_TYPE.MAC
+    elif pf == "Linux":
+        return OS_TYPE.LINUX
+
+
 def main():
+    os_type = check_platform()
+    print(os_type)
+
     sb_client = SwitchBotClient(token=SWITCHBOT_TOKEN, secret_key=SWITCHBOT_SECRET_KEY)
     ai_client = OpenAI(organization=ORGANIZATION_ID, api_key=API_KEY)
     model = "gpt-3.5-turbo-1106"
@@ -27,12 +49,7 @@ def main():
     messages = [
         {
             "role": "system",
-            "content": "You are a smart home agent that can control devices in the home.",
-        },
-        {"role": "system", "content": "Any device names must be provided in Japanese."},
-        {
-            "role": "system",
-            "content": "When controlling curtains, turnOn means open and turnOff means close.",
+            "content": "You are a smart home agent that can control devices in the home. Any device names must be provided in Japanese. When controlling curtains, turnOn means open and turnOff means close.",
         },
     ]
 

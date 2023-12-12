@@ -8,7 +8,7 @@
             "properties": {
                 "device_name": {
                     "type": "string",
-                    "description": "The name of the device to control. e.g. 'リビングのライト', 'サーキュレーターのプラグ', '寝室のライト', 'リビングのカーテン'"
+                    "description": "The name of the device to control. e.g. 'リビングのライト', 'サーキュレーターのプラグ', '寝室のライト', 'リビングのカーテン', 'フロアライト'"
                 },
                 "command": {
                     "type": "string",
