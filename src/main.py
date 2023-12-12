@@ -43,8 +43,9 @@ def main():
     available_functions = {
         f"{sb_client.control_device_with_name.__name__}": sb_client.control_device_with_name
     }
+    tools = []
     with open("func_definitions/control_device_with_name.json") as f:
-        tools = [json.load(f)]
+        tools.append(json.load(f))
 
     messages = [
         {
