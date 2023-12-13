@@ -2,6 +2,10 @@ import json
 import os
 import platform
 from enum import Enum
+from pathlib import Path
+
+import soundcard
+import soundfile
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -23,21 +27,44 @@ class OS_TYPE(Enum):
 
 def check_platform() -> OS_TYPE:
     pf = platform.system()
-    if pf == "Windows":
-        return OS_TYPE.WINDOWS
-    elif pf == "Darwin":
-        import pyaudio
-
+    if pf == "Darwin":
         return OS_TYPE.MAC
     elif pf == "Linux":
         return OS_TYPE.LINUX
+
+
+def record_sound(sound_file_path: str):
+    print("speak your instruction...")
+
+    default_mic = soundcard.default_microphone()
+
+    sample_rate = 48000
+    recording_time = 5  # [seconds]
+    with default_mic.recorder(samplerate=sample_rate) as mic:
+        data = mic.record(numframes=recording_time * sample_rate)
+
+    soundfile.write(sound_file_path, data, sample_rate)
+
+
+def play_sound(sound_file_path: str):
+    print("playing the sound file...")
+
+    default_speaker = soundcard.default_speaker()
+
+    sample_rate = 25000
+    with default_speaker.player(samplerate=sample_rate) as sp:
+        data, _ = soundfile.read(sound_file_path)
+        sp.play(data)
 
 
 def main():
     os_type = check_platform()
     print(os_type)
 
+    # SwitchBot settings
     sb_client = SwitchBotClient(token=SWITCHBOT_TOKEN, secret_key=SWITCHBOT_SECRET_KEY)
+
+    # OpenAI settings
     ai_client = OpenAI(organization=ORGANIZATION_ID, api_key=API_KEY)
     model = "gpt-3.5-turbo-1106"
     available_functions = {
@@ -54,12 +81,32 @@ def main():
         },
     ]
 
-    while True:
-        prompt = input("Q: ")
-        if prompt == "q" or prompt == "":
-            break
+    # sound file settings
+    dir_name = "./soundfile"
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
 
+    sound_file_name = "/sound.mp3"
+    sound_file_path = Path(dir_name + sound_file_name)
+
+    # Main loop
+    while True:
+        key = input("Enter to start recording for 5 seconds, q to exit: ")
+        if key == "q":
+            break
+        elif key == "":
+            record_sound(sound_file_path)
+            with open(sound_file_path, "rb") as f:
+                response = ai_client.audio.transcriptions.create(
+                    model="whisper-1", file=f
+                )
+        else:
+            print("Invalid key input")
+            continue
+
+        prompt = response.text
         messages.append({"role": "user", "content": prompt})
+        print("Q:", prompt)
 
         response = ai_client.chat.completions.create(
             model=model,
@@ -111,12 +158,20 @@ def main():
             answer = response.choices[0].message.content
             messages.append({"role": "assistant", "content": answer})
 
+            response = ai_client.audio.speech.create(
+                model="tts-1", voice="alloy", input=answer
+            )
+            response.stream_to_file(sound_file_path)
+
+        play_sound(sound_file_path)
         print("A:", answer)
 
     print("----- Chat history -----")
     for msg in messages:
         msg_dict = dict(msg)
         if msg_dict["content"] is None:
+            continue
+        if msg["role"] == "system":
             continue
 
         if msg_dict["role"] == "assistant":

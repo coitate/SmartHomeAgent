@@ -12,23 +12,24 @@ A Smart Home Agent using OpenAI API can recognize a user voice and instructions 
 - Environment
   - Python: 3.11
   - OS: Windows (WSL: Ubuntu 22.04) and macOS Monterey are tested.
-  - CPU: i5-12xxU (Win) and M1 Max (Mac) are tested.
+  - CPU: i5-1235U (Win) and M1 Max (Mac) are tested.
   - Memory: 16 GB (Win) and 32 GB (Mac) are tested.
 
 ## Get to started
 
-1. Install packages to use audio devices
-   - Windows
+1. Install packages to use a mic and speaker
 
-     WIP.
+    - Windows (WSL)
 
-   - Mac
+      WIP.
 
-     Install `portaudio`
+    - Mac
 
-     ```bash
-     brew install portaudio
-     ```
+      WIP.
+
+    - Ubuntu
+
+      WIP.
 
 1. Set parameters
 
