@@ -19,20 +19,6 @@ ORGANIZATION_ID = os.getenv("ORGANIZATION_ID")
 API_KEY = os.getenv("API_KEY")
 
 
-class OS_TYPE(Enum):
-    WINDOWS = "Windows"
-    MAC = "MAC"
-    LINUX = "Linux"
-
-
-def check_platform() -> OS_TYPE:
-    pf = platform.system()
-    if pf == "Darwin":
-        return OS_TYPE.MAC
-    elif pf == "Linux":
-        return OS_TYPE.LINUX
-
-
 def record_sound(sound_file_path: str):
     print("speak your instruction...")
 
@@ -58,9 +44,6 @@ def play_sound(sound_file_path: str):
 
 
 def main():
-    os_type = check_platform()
-    print(os_type)
-
     # SwitchBot settings
     sb_client = SwitchBotClient(token=SWITCHBOT_TOKEN, secret_key=SWITCHBOT_SECRET_KEY)
 
@@ -71,7 +54,7 @@ def main():
         f"{sb_client.control_device_with_name.__name__}": sb_client.control_device_with_name
     }
     tools = []
-    with open("func_definitions/control_device_with_name.json") as f:
+    with open("func_definitions/control_device_with_name.json", encoding="utf-8") as f:
         tools.append(json.load(f))
 
     messages = [
@@ -158,13 +141,13 @@ def main():
             answer = response.choices[0].message.content
             messages.append({"role": "assistant", "content": answer})
 
-            response = ai_client.audio.speech.create(
-                model="tts-1", voice="alloy", input=answer
-            )
-            response.stream_to_file(sound_file_path)
+        response = ai_client.audio.speech.create(
+            model="tts-1", voice="alloy", input=answer
+        )
+        response.stream_to_file(sound_file_path)
 
-        play_sound(sound_file_path)
         print("A:", answer)
+        play_sound(sound_file_path)
 
     print("----- Chat history -----")
     for msg in messages:

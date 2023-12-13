@@ -10,26 +10,10 @@ A Smart Home Agent using OpenAI API can recognize a user voice and instructions 
 - To call SwitchBot API, an account and TOKEN, API_KEY are needed.
   - <https://github.com/OpenWonderLabs/SwitchBotAPI#getting-started>
 - Environment
-  - Python: 3.11
-  - OS: Windows (WSL: Ubuntu 22.04) and macOS Monterey are tested.
-  - CPU: i5-1235U (Win) and M1 Max (Mac) are tested.
-  - Memory: 16 GB (Win) and 32 GB (Mac) are tested.
+  - Python: 3.10 and 3.11 are tested.
+  - OS: Ubuntu 22.04 (WSL)
 
-## Get to started
-
-1. Install packages to use a mic and speaker
-
-    - Windows (WSL)
-
-      WIP.
-
-    - Mac
-
-      WIP.
-
-    - Ubuntu
-
-      WIP.
+## Get started
 
 1. Set parameters
 
@@ -44,13 +28,13 @@ A Smart Home Agent using OpenAI API can recognize a user voice and instructions 
 
 1. Create a virtual environment
 
-    ```bash
+    ```sh
     python -m venv .venv
     ```
 
 1. Activate the virtual environment
 
-    ```bash
+    ```sh
     source .venv/bin/activate
     ```
 
@@ -58,18 +42,20 @@ A Smart Home Agent using OpenAI API can recognize a user voice and instructions 
 
 1. Install the dependency
 
-    ```bash
+    ```sh
     pip install -r requirements.txt
     ```
 
 1. Run the code
 
-    ```bash
+    ```sh
     python src/main.py
     ```
 
-    You'll see a message like below. Enter the instructions.
+    You'll see a message like below. Push enter and recording for 5 seconds will be started. When you speak like 「リビングのライトを点けて」, your voice will be transformed to text and sent to the OpenAI model and the device will be turned on.
+
+    To exit the interaction, enter 'q' key when the message is displayed.
 
     ```txt
-    Q:
+    Enter to start recording for 5 seconds, q to exit:
     ```
