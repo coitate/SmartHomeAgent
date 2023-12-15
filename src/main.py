@@ -1,14 +1,13 @@
 import json
 import os
-import platform
-from enum import Enum
 from pathlib import Path
+from threading import Thread
 
 import soundcard
-import soundfile
 from dotenv import load_dotenv
 from openai import OpenAI
 
+import soundfile
 from switchbot_client.client import SwitchBotClient
 
 load_dotenv()
@@ -49,7 +48,9 @@ def main():
 
     # OpenAI settings
     ai_client = OpenAI(organization=ORGANIZATION_ID, api_key=API_KEY)
-    model = "gpt-3.5-turbo-1106"
+    chat_model = "gpt-3.5-turbo-1106"
+    stt_model = "whisper-1"
+    tts_model = "tts-1"
     available_functions = {
         f"{sb_client.control_device_with_name.__name__}": sb_client.control_device_with_name
     }
@@ -60,7 +61,7 @@ def main():
     messages = [
         {
             "role": "system",
-            "content": "You are a smart home agent that can control devices in the home. Any device names must be provided in Japanese. When controlling curtains, turnOn means open and turnOff means close.",
+            "content": "You are a smart home agent who can control devices in the home. Any device names must be provided in Japanese. When controlling curtains, turnOn means open and turnOff means close.",
         },
     ]
 
@@ -81,7 +82,7 @@ def main():
             record_sound(sound_file_path)
             with open(sound_file_path, "rb") as f:
                 response = ai_client.audio.transcriptions.create(
-                    model="whisper-1", file=f
+                    model=stt_model, file=f
                 )
         else:
             print("Invalid key input")
@@ -92,7 +93,7 @@ def main():
         print("Q:", prompt)
 
         response = ai_client.chat.completions.create(
-            model=model,
+            model=chat_model,
             messages=messages,
             max_tokens=1000,
             tools=tools,
@@ -118,10 +119,15 @@ def main():
                 function_args = json.loads(tool_call.function.arguments)
                 values = list(function_args.values())
                 function_output = function_to_call(*values)
-                print(function_name, function_args, "function_output:", function_output)
+                print(
+                    function_name,
+                    function_args,
+                    "function_output:",
+                    function_output["message"],
+                )
 
                 content = function_args
-                content["function_output"] = function_output
+                content["function_output"] = function_output["message"]
                 message = {
                     "tool_call_id": tool_call.id,
                     "role": "tool",
@@ -131,7 +137,7 @@ def main():
                 messages.append(message)
 
             response = ai_client.chat.completions.create(
-                model=model,
+                model=chat_model,
                 messages=messages,
                 max_tokens=1000,
                 tools=tools,
@@ -142,12 +148,13 @@ def main():
             messages.append({"role": "assistant", "content": answer})
 
         response = ai_client.audio.speech.create(
-            model="tts-1", voice="alloy", input=answer
+            model=tts_model, voice="alloy", input=answer
         )
         response.stream_to_file(sound_file_path)
 
+        thread = Thread(target=play_sound, args=[sound_file_path])
+        thread.start()
         print("A:", answer)
-        play_sound(sound_file_path)
 
     print("----- Chat history -----")
     for msg in messages:

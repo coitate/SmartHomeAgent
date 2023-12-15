@@ -139,5 +139,8 @@ class SwitchBotClient:
         return self.get_device_status_with_id(device_id)
 
     def control_device_with_name(self, device_name: str, command: str) -> dict:
-        device_id = self.get_device_id_with_name(device_name)
+        try:
+            device_id = self.get_device_id_with_name(device_name)
+        except KeyError:
+            return {"message": "device not found"}
         return self.__send_command(device_id, command)
